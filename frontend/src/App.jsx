@@ -1,0 +1,43 @@
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
+import URLShortener from "./pages/URLShortener";
+import Layout from "./pages/Layout";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import { useUser } from "./hooks/useUser";
+
+const App = () => {
+  const { user } = useUser();
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <Layout />,
+      children: [
+        {
+          path: "/",
+          element: user ? <URLShortener /> : <Navigate to="/login" replace />,
+        },
+        {
+          path: "/login",
+          element: user ? <Navigate to="/" /> : <Login />,
+        },
+        {
+          path: "/register",
+          element: user ? <Navigate to="/" /> : <Register />,
+        },
+        {
+          path: "/dashboard",
+          element: user ? <Dashboard /> : <Navigate to="/login" />,
+        },
+      ],
+    },
+  ]);
+
+  return <RouterProvider router={router} />;
+};
+
+export default App;
