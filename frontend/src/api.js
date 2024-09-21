@@ -25,7 +25,7 @@ api.interceptors.request.use(
 
 export default {
   login: (credentials) => api.post("/login", credentials),
-  signup: (userData) => api.post("/signup", userData),
+  signup: (userData) => api.post("/register", userData),
   getCurrentUser: () => api.get("/verify-token"),
   shortenURL: (urlData) => api.post("/shorten", urlData),
   getUserURLs: () => api.get("/dashboard"),
