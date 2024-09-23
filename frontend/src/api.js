@@ -24,11 +24,11 @@ api.interceptors.request.use(
 );
 
 export default {
-  login: (credentials) => api.post("/login", credentials),
-  signup: (userData) => api.post("/register", userData),
-  getCurrentUser: () => api.get("/verify-token"),
-  shortenURL: (urlData) => api.post("/shorten", urlData),
-  getUserURLs: () => api.get("/dashboard"),
+  login: (credentials) => api.post("/auth/login", credentials),
+  signup: (userData) => api.post("/auth/register", userData),
+  getCurrentUser: () => api.get("/auth/verify-token"),
+  shortenURL: (urlData) => api.post("/urls/shorten", urlData),
+  getUserURLs: () => api.get("/urls"),
   // Add other API methods here
 };
 
