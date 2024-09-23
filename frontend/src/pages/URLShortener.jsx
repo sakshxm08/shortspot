@@ -8,6 +8,20 @@ const URLShortener = () => {
   const [shortenedURL, setShortenedURL] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [protocol, setProtocol] = useState("https");
+
+  const isValidURL = (url) => {
+    const pattern = new RegExp(
+      "^(https?:\\/\\/)?" + // protocol
+        "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|" + // domain name
+        "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
+        "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
+        "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
+        "(\\#[-a-z\\d_]*)?$",
+      "i" // fragment locator
+    );
+    return !!pattern.test(url);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,9 +34,25 @@ const URLShortener = () => {
       return;
     }
 
+    if (inputURL.startsWith("http:") || inputURL.startsWith("https:")) {
+      setError(
+        "Please remove the protocol from the URL and select it from the dropdown."
+      );
+      setIsLoading(false);
+      return;
+    }
+
+    let fullURL = `${protocol}://${inputURL}`;
+
+    if (!isValidURL(fullURL)) {
+      setError("Please enter a valid URL.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await api.shortenURL({
-        originalUrl: inputURL,
+        originalUrl: fullURL,
         customUrl: customURL,
         useCustomUrl: useCustomURL,
       });
@@ -39,14 +69,24 @@ const URLShortener = () => {
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-xl">
       <h1 className="text-2xl font-bold mb-4 text-center">URL Shortener</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="url"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={inputURL}
-          onChange={(e) => setInputURL(e.target.value)}
-          placeholder="Enter URL to shorten"
-          required
-        />
+        <div className="flex">
+          <select
+            value={protocol}
+            onChange={(e) => setProtocol(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="http">http://</option>
+            <option value="https">https://</option>
+          </select>
+          <input
+            type="text"
+            className="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={inputURL}
+            onChange={(e) => setInputURL(e.target.value)}
+            placeholder="Enter URL to shorten"
+            required
+          />
+        </div>
         <div className="flex items-center">
           <input
             type="checkbox"
