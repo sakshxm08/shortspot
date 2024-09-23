@@ -14,6 +14,12 @@ const URLShortener = () => {
     setIsLoading(true);
     setError("");
 
+    if (useCustomURL && customURL.includes("/")) {
+      setError("Custom URL cannot contain slashes");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await api.shortenURL({
         originalUrl: inputURL,

@@ -6,6 +6,11 @@ const shortenUrl = async (req, res) => {
   let shortUrl;
 
   if (useCustomUrl && customUrl) {
+    if (customUrl.includes("/")) {
+      return res
+        .status(400)
+        .json({ error: "Custom URL cannot contain slashes" });
+    }
     const existingUrl = await Url.findOne({ shortUrl: customUrl });
     if (existingUrl) {
       return res.status(400).json({ error: "Custom URL is already in use" });
