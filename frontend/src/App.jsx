@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import { useUser } from "./hooks/useUser";
+import { URLProvider } from "./context/URLsContext";
 
 const App = () => {
   const { user } = useUser();
@@ -37,7 +38,11 @@ const App = () => {
     },
   ]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <URLProvider>
+      <RouterProvider router={router} />
+    </URLProvider>
+  );
 };
 
 export default App;

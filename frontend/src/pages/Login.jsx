@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useLogin } from "../hooks/useLogin";
 
 const Login = () => {
@@ -24,7 +25,12 @@ const Login = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-xl">
+    <motion.div
+      className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <h1 className="text-2xl font-bold mb-4 text-center">Login</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -51,7 +57,7 @@ const Login = () => {
         </button>
       </form>
       {error && <p className="mt-4 text-red-500">{error}</p>}
-    </div>
+    </motion.div>
   );
 };
 

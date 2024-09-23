@@ -29,6 +29,8 @@ export default {
   getCurrentUser: () => api.get("/auth/verify-token"),
   shortenURL: (urlData) => api.post("/urls/shorten", urlData),
   getUserURLs: () => api.get("/urls"),
+  deleteURL: (id) => api.delete(`/urls/${id}`),
+  updateURL: (id, urlData) => api.put(`/urls/${id}`, urlData),
   // Add other API methods here
 };
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import api from "../api";
 
 const URLShortener = () => {
@@ -66,7 +67,12 @@ const URLShortener = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-xl">
+    <motion.div
+      className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <h1 className="text-2xl font-bold mb-4 text-center">URL Shortener</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex">
@@ -136,7 +142,7 @@ const URLShortener = () => {
           <p className="text-red-700">{error}</p>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

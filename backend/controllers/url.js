@@ -55,4 +55,60 @@ const redirectToOriginalUrl = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-export default { shortenUrl, getUrls, redirectToOriginalUrl };
+
+const deleteUrl = async (req, res) => {
+  try {
+    const url = await Url.findOneAndDelete({
+      _id: req.params.id,
+      user: req.userId,
+    });
+    if (!url) {
+      return res.status(404).json({ error: "URL not found or not authorized" });
+    }
+    res.json({ message: "URL deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const updateUrl = async (req, res) => {
+  const { originalUrl, customUrl } = req.body;
+  let shortUrl;
+
+  if (customUrl) {
+    if (customUrl.includes("/")) {
+      return res
+        .status(400)
+        .json({ error: "Custom URL cannot contain slashes" });
+    }
+    const existingUrl = await Url.findOne({ shortUrl: customUrl });
+    if (existingUrl && existingUrl._id.toString() !== req.params.id) {
+      return res.status(400).json({ error: "Custom URL is already in use" });
+    }
+    shortUrl = customUrl;
+  } else {
+    shortUrl = shortid.generate();
+  }
+
+  try {
+    const url = await Url.findOneAndUpdate(
+      { _id: req.params.id, user: req.userId },
+      { originalUrl, shortUrl },
+      { new: true }
+    );
+    if (!url) {
+      return res.status(404).json({ error: "URL not found or not authorized" });
+    }
+    res.json(url);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+export default {
+  shortenUrl,
+  getUrls,
+  redirectToOriginalUrl,
+  deleteUrl,
+  updateUrl,
+};
