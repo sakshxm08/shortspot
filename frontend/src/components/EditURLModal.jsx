@@ -70,7 +70,7 @@ const EditURLModal = ({ url, onClose }) => {
               id="originalUrl"
               value={originalUrl}
               onChange={(e) => setOriginalUrl(e.target.value)}
-              className="w-full p-2 rounded-md border border-gray-200 focus:border-blue-500 focus:outline-none"
+              className="w-full p-2 rounded-md border border-gray-200 focus:border-primary-500 focus:outline-none"
               required
             />
           </div>
@@ -90,7 +90,7 @@ const EditURLModal = ({ url, onClose }) => {
                 id="customUrl"
                 value={customUrl}
                 onChange={(e) => setCustomUrl(e.target.value)}
-                className="w-full p-2 border rounded-r-md border-gray-200 focus:border-blue-500 focus:outline-none"
+                className="w-full p-2 border rounded-r-md border-gray-200 focus:border-primary-500 focus:outline-none"
               />
             </div>
           </div>
@@ -106,7 +106,7 @@ const EditURLModal = ({ url, onClose }) => {
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:text-gray-800 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-600 disabled:bg-gray-300 disabled:text-gray-800 disabled:cursor-not-allowed"
             >
               {loading ? "Saving..." : "Save Changes"}
             </button>

@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useCallback } from "react";
-import api, { setAuthToken } from "./api";
+import api, { setAuthToken } from "../api";
 import PropTypes from "prop-types";
 
 export const UserContext = createContext();

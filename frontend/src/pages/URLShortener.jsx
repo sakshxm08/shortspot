@@ -1,27 +1,43 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import api from "../api";
+import { Link } from "react-router-dom";
+import Menu from "../components/Menu";
 
 const URLShortener = () => {
   const [inputURL, setInputURL] = useState("");
   const [customURL, setCustomURL] = useState("");
   const [useCustomURL, setUseCustomURL] = useState(false);
   const [shortenedURL, setShortenedURL] = useState("");
+  const [responseURL, setResponseURL] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [protocol, setProtocol] = useState("https");
 
   const isValidURL = (url) => {
-    const pattern = new RegExp(
-      "^(https?:\\/\\/)?" + // protocol
-        "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|" + // domain name
-        "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
-        "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
-        "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
-        "(\\#[-a-z\\d_]*)?$",
-      "i" // fragment locator
-    );
-    return !!pattern.test(url);
+    // Regular expression to match valid domain names
+    const domainRegex = /^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$/;
+
+    // Split the URL into domain and path
+    const [domain, ...pathParts] = url.split("/");
+
+    // Check if the domain is valid
+    if (!domainRegex.test(domain)) {
+      return false;
+    }
+
+    // If there's a path, make sure it's valid
+    if (pathParts.length > 0) {
+      const path = "/" + pathParts.join("/");
+      try {
+        new URL(`http://${domain}${path}`);
+      } catch (error) {
+        console.error("Error parsing URL:", error);
+        return false;
+      }
+    }
+
+    return true;
   };
 
   const handleSubmit = async (e) => {
@@ -30,12 +46,14 @@ const URLShortener = () => {
     setError("");
 
     if (useCustomURL && customURL.includes("/")) {
+      setShortenedURL("");
       setError("Custom URL cannot contain slashes");
       setIsLoading(false);
       return;
     }
 
     if (inputURL.startsWith("http:") || inputURL.startsWith("https:")) {
+      setShortenedURL("");
       setError(
         "Please remove the protocol from the URL and select it from the dropdown."
       );
@@ -43,13 +61,14 @@ const URLShortener = () => {
       return;
     }
 
-    let fullURL = `${protocol}://${inputURL}`;
-
-    if (!isValidURL(fullURL)) {
+    if (!isValidURL(inputURL)) {
+      setShortenedURL("");
       setError("Please enter a valid URL.");
       setIsLoading(false);
       return;
     }
+
+    let fullURL = `${protocol}://${inputURL}`;
 
     try {
       const response = await api.shortenURL({
@@ -57,9 +76,10 @@ const URLShortener = () => {
         customUrl: customURL,
         useCustomUrl: useCustomURL,
       });
-
+      setResponseURL(response.data);
       setShortenedURL(response.data.shortUrl);
     } catch (err) {
+      setShortenedURL("");
       setError(err.response?.data?.error || "Failed to shorten URL");
     } finally {
       setIsLoading(false);
@@ -73,20 +93,22 @@ const URLShortener = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <h1 className="text-2xl font-bold mb-4 text-center">URL Shortener</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">
+        ShortSpot - URL Shortener
+      </h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex">
           <select
             value={protocol}
             onChange={(e) => setProtocol(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-2 py-2 border border-gray-300 bg-gray-300 text-gray-600 rounded-l-md focus:outline-none focus:ring-1 focus:ring-primary-500"
           >
             <option value="http">http://</option>
             <option value="https">https://</option>
           </select>
           <input
             type="text"
-            className="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-1 focus:ring-primary-500"
             value={inputURL}
             onChange={(e) => setInputURL(e.target.value)}
             placeholder="Enter URL to shorten"
@@ -97,7 +119,7 @@ const URLShortener = () => {
           <input
             type="checkbox"
             id="useCustomURL"
-            className="mr-2"
+            className="mr-2 accent-primary-500"
             checked={useCustomURL}
             onChange={(e) => setUseCustomURL(e.target.checked)}
           />
@@ -106,7 +128,7 @@ const URLShortener = () => {
         {useCustomURL && (
           <input
             type="text"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary-500"
             value={customURL}
             onChange={(e) => setCustomURL(e.target.value)}
             placeholder="Enter custom short URL"
@@ -115,7 +137,7 @@ const URLShortener = () => {
         )}
         <button
           type="submit"
-          className={`w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ${
+          className={`w-full py-2 px-4 bg-primary-500 text-white font-semibold rounded-lg shadow-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-opacity-75 ${
             isLoading ? "opacity-50 cursor-not-allowed" : ""
           }`}
           disabled={isLoading}
@@ -124,16 +146,19 @@ const URLShortener = () => {
         </button>
       </form>
       {shortenedURL && (
-        <div className="mt-4 p-4 bg-blue-100 rounded-md">
-          <h2 className="text-lg font-semibold mb-2">Shortened URL:</h2>
-          <a
-            href={shortenedURL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline break-all"
-          >
-            {shortenedURL}
-          </a>
+        <div className="flex items-center justify-between mt-4 p-4 bg-primary-500/20 rounded-md">
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Shortened URL:</h2>
+            <Link
+              to={shortenedURL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-500 hover:underline break-all"
+            >
+              {shortenedURL}
+            </Link>
+          </div>
+          <Menu url={responseURL} />
         </div>
       )}
       {error && (

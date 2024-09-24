@@ -164,7 +164,7 @@ frontend/
 │ │ ├── useURLs.jsx
 │ │ └── useUser.jsx
 │ ├── pages/
-│ │ ├── Dashboard.jsx
+│ │ ├── MyURLs.jsx
 │ │ ├── Layout.jsx
 │ │ ├── Login.jsx
 │ │ ├── Register.jsx

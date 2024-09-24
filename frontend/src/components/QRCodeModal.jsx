@@ -80,13 +80,13 @@ const QRCodeModal = ({ isOpen, onClose, url }) => {
         <div className="flex justify-center space-x-4">
           <button
             onClick={downloadQRCode}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-600"
           >
             <FaDownload /> Download
           </button>
           <button
             onClick={shareQRCode}
-            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            className="flex items-center gap-2 px-4 py-2 border border-primary-500 rounded hover:bg-primary-100 text-primary-500 transition-all"
           >
             <FaShare /> Share
           </button>

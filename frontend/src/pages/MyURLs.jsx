@@ -4,7 +4,7 @@ import api from "../api";
 import URLCard from "../components/URLCard";
 import { useURLs } from "../hooks/useURLs";
 
-const Dashboard = () => {
+const MyURLs = () => {
   const { urls, setUrls } = useURLs();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -52,4 +52,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default MyURLs;

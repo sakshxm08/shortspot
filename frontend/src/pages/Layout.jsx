@@ -8,7 +8,7 @@ const Layout = () => {
   const { logout } = useLogout();
   return (
     <div>
-      <nav className="bg-blue-500 p-4">
+      <nav className="bg-primary-500 p-4">
         <ul className="flex space-x-4">
           <li>
             <Link to="/" className="text-white hover:underline">
@@ -18,8 +18,8 @@ const Layout = () => {
           {user ? (
             <>
               <li>
-                <Link to="/dashboard" className="text-white hover:underline">
-                  Dashboard
+                <Link to="/my-urls" className="text-white hover:underline">
+                  My URLs
                 </Link>
               </li>
               <li>

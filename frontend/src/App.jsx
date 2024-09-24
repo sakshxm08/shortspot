@@ -7,9 +7,9 @@ import URLShortener from "./pages/URLShortener";
 import Layout from "./pages/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
 import { useUser } from "./hooks/useUser";
 import { URLProvider } from "./context/URLsContext";
+import MyURLs from "./pages/MyURLs";
 
 const App = () => {
   const { user } = useUser();
@@ -31,8 +31,8 @@ const App = () => {
           element: user ? <Navigate to="/" /> : <Register />,
         },
         {
-          path: "/dashboard",
-          element: user ? <Dashboard /> : <Navigate to="/login" />,
+          path: "/my-urls",
+          element: user ? <MyURLs /> : <Navigate to="/login" />,
         },
       ],
     },

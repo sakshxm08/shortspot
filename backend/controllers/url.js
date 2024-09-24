@@ -28,7 +28,8 @@ const shortenUrl = async (req, res) => {
     });
 
     await url.save();
-    res.json({ shortUrl: `${process.env.BASE_URL}/${shortUrl}` });
+    url.shortUrl = `${process.env.BASE_URL}/${shortUrl}`;
+    res.json(url);
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
