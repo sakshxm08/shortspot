@@ -136,7 +136,12 @@ backend/
 │   ├── Url.js
 │   └── User.js
 ├── routes/
-│
+│   ├── user.js
+│   ├── url.js
+│   └── redirect.js
+├── .env
+├── index.js
+└── package.json
 ```
 
 ### Frontend
@@ -144,26 +149,35 @@ backend/
 ```
 frontend/
 ├── src/
-│   ├── api.js
-│   ├── App.jsx
-│   ├── main.jsx
-│   ├── UserContext.jsx
-│   ├── hooks/
-│   │   ├── useLogin.jsx
-│   │   ├── useLogout.jsx
-│   │   ├── useRegister.jsx
-│   │   └── useUser.jsx
-│   └── pages/
-│       ├── Dashboard.jsx
-│       ├── Layout.jsx
-│       ├── Login.jsx
-│       ├── Register.jsx
-│       └── URLShortener.jsx
+│ ├── components/
+│ │ ├── DeleteConfirmationModal.jsx
+│ │ ├── EditURLModal.jsx
+│ │ ├── QRCodeModal.jsx
+│ │ └── URLCard.jsx
+│ ├── context/
+│ │ ├── URLsContext.jsx
+│ │ └── UserContext.jsx
+│ ├── hooks/
+│ │ ├── useLogin.jsx
+│ │ ├── useLogout.jsx
+│ │ ├── useRegister.jsx
+│ │ ├── useURLs.jsx
+│ │ └── useUser.jsx
+│ ├── pages/
+│ │ ├── Dashboard.jsx
+│ │ ├── Layout.jsx
+│ │ ├── Login.jsx
+│ │ ├── Register.jsx
+│ │ └── URLShortener.jsx
+│ ├── api.js
+│ ├── App.jsx
+│ └── main.jsx
 ├── index.html
 ├── package.json
 ├── tailwind.config.js
 ├── vite.config.js
 └── .env
+
 ```
 
 ## Contributing
