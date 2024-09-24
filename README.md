@@ -2,23 +2,27 @@
 
 ## Overview
 
-This URL Shortener is a full-stack web application that allows users to create shortened versions of long URLs. It features user authentication, custom short URL creation, and a dashboard to view shortened URLs.
+This URL Shortener is a full-stack web application that allows users to create shortened versions of long URLs. It features user authentication, custom short URL creation, and a dashboard to view and manage shortened URLs.
 
 ## Features
 
 - User registration and login
 - URL shortening with optional custom aliases
 - Dashboard to view and manage shortened URLs
+- QR code generation for shortened URLs
+- Sharing functionality for shortened URLs
 - Responsive design using Tailwind CSS
 
 ## Tech Stack
 
 ### Frontend
 
-- React
+- React with Vite
 - React Router for navigation
 - Axios for API requests
 - Tailwind CSS for styling
+- Framer Motion for animations
+- QRCode.react for QR code generation
 
 ### Backend
 
@@ -26,6 +30,8 @@ This URL Shortener is a full-stack web application that allows users to create s
 - Express.js
 - MongoDB with Mongoose
 - JSON Web Tokens (JWT) for authentication
+- bcryptjs for password hashing
+- shortid for generating short URLs
 
 ## Project Structure
 
@@ -102,14 +108,17 @@ The project is divided into two main directories:
 3. Optionally, provide a custom alias for the shortened URL.
 4. Click "Shorten URL" to generate a short link.
 5. View your shortened URLs on the dashboard.
+6. Manage your shortened URLs (edit, delete, generate QR code, share).
 
 ## API Endpoints
 
-- `POST /api/register`: Register a new user
-- `POST /api/login`: Log in a user
-- `GET /api/verify-token`: Verify JWT token
-- `POST /api/shorten`: Create a shortened URL
-- `GET /api/dashboard`: Get user's shortened URLs
+- `POST /api/auth/register`: Register a new user
+- `POST /api/auth/login`: Log in a user
+- `GET /api/auth/verify-token`: Verify JWT token
+- `POST /api/urls/shorten`: Create a shortened URL
+- `GET /api/urls`: Get user's shortened URLs
+- `PUT /api/urls/:id`: Update a shortened URL
+- `DELETE /api/urls/:id`: Delete a shortened URL
 - `GET /:shortUrl`: Redirect to the original URL
 
 ## File Structure
@@ -118,9 +127,16 @@ The project is divided into two main directories:
 
 ```
 backend/
-├── index.js
-├── package.json
-└── .env
+├── controllers/
+│   ├── url.js
+│   └── user.js
+├── middlewares/
+│   └── verifyToken.js
+├── models/
+│   ├── Url.js
+│   └── User.js
+├── routes/
+│
 ```
 
 ### Frontend
