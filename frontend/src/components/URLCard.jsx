@@ -1,18 +1,9 @@
 import PropTypes from "prop-types";
 import moment from "moment/moment";
 import Menu from "./Menu";
+import { getFaviconUrl } from "../utils/urlUtilities";
 
 const URLCard = ({ url }) => {
-  const getFaviconUrl = (originalUrl) => {
-    try {
-      const domain = new URL(originalUrl).hostname;
-      return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-    } catch (error) {
-      console.error("Error parsing URL:", error);
-      return null;
-    }
-  };
-
   return (
     <li className="shadow-lg bg-white px-6 py-5 rounded-lg flex justify-between">
       <div className="flex gap-2">
@@ -32,7 +23,9 @@ const URLCard = ({ url }) => {
           }/${url.shortUrl}`}</h4>
           <h6 className="text-sm text-primary-400">{url.originalUrl}</h6>
           <div className="flex items-center text-gray-400 text-xs">
-            <span className="pr-2 border-r border-gray-300">Clicks: 0</span>
+            <span className="pr-2 border-r border-gray-300">
+              Clicks: {url?.analytics.length}
+            </span>
             <span className="pl-2">{moment(url.createdAt).fromNow()}</span>
           </div>
         </div>
@@ -48,6 +41,7 @@ URLCard.propTypes = {
     originalUrl: PropTypes.string.isRequired,
     shortUrl: PropTypes.string.isRequired,
     createdAt: PropTypes.string.isRequired,
+    analytics: PropTypes.array.isRequired,
   }).isRequired,
 };
 

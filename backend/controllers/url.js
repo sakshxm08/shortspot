@@ -1,5 +1,7 @@
 import Url from "../models/Url.js";
 import shortid from "shortid";
+import geoip from "geoip-lite";
+import useragent from "useragent";
 
 const shortenUrl = async (req, res) => {
   const { originalUrl, customUrl, useCustomUrl } = req.body;
@@ -28,7 +30,6 @@ const shortenUrl = async (req, res) => {
     });
 
     await url.save();
-    url.shortUrl = `${process.env.BASE_URL}/${shortUrl}`;
     res.json(url);
   } catch (err) {
     res.status(500).json({ error: "Server error" });
@@ -48,6 +49,27 @@ const redirectToOriginalUrl = async (req, res) => {
   try {
     const url = await Url.findOne({ shortUrl: req.params.shortUrl });
     if (url) {
+      const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+      const geo = geoip.lookup(ip);
+      const userAgent = req.headers["user-agent"];
+      const referrer = req.headers["referer"] || "Direct";
+      const agent = useragent.parse(userAgent);
+
+      url.analytics.push({
+        ip,
+        userAgent,
+        referrer,
+        location: {
+          country: geo?.country,
+          city: geo?.city,
+        },
+        deviceType: agent.device.toString(),
+        os: agent.os.toString(),
+        browser: agent.toAgent(),
+        language: req.headers["accept-language"],
+      });
+
+      await url.save();
       return res.redirect(url.originalUrl);
     } else {
       return res.status(404).json({ error: "No URL found" });
@@ -106,10 +128,26 @@ const updateUrl = async (req, res) => {
   }
 };
 
+const getURL = async (req, res) => {
+  try {
+    const url = await Url.findOne({
+      shortUrl: req.params.shortUrl,
+      user: req.userId,
+    });
+    if (!url) {
+      return res.status(404).json({ error: "URL not found or not authorized" });
+    }
+    res.json(url);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 export default {
   shortenUrl,
   getUrls,
   redirectToOriginalUrl,
   deleteUrl,
   updateUrl,
+  getURL,
 };

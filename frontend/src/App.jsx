@@ -10,9 +10,16 @@ import Register from "./pages/Register";
 import { useUser } from "./hooks/useUser";
 import { URLProvider } from "./context/URLsContext";
 import MyURLs from "./pages/MyURLs";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
+import URLAnalytics from "./components/URLAnalytics";
 
 const App = () => {
-  const { user } = useUser();
+  const { user, loading } = useUser();
+
+  if (loading) {
+    return null; // Or a more sophisticated loading component
+  }
+
   const router = createBrowserRouter([
     {
       path: "/",
@@ -33,6 +40,20 @@ const App = () => {
         {
           path: "/my-urls",
           element: user ? <MyURLs /> : <Navigate to="/login" />,
+        },
+        {
+          path: "/analytics",
+          element: user ? <AnalyticsDashboard /> : <Navigate to="/login" />,
+          children: [
+            {
+              path: "",
+              element: <div></div>,
+            },
+            {
+              path: ":shortUrl",
+              element: <URLAnalytics />,
+            },
+          ],
         },
       ],
     },

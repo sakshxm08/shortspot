@@ -31,6 +31,8 @@ export default {
   getUserURLs: () => api.get("/urls"),
   deleteURL: (id) => api.delete(`/urls/${id}`),
   updateURL: (id, urlData) => api.put(`/urls/${id}`, urlData),
+  getAnalytics: (shortUrl) => api.get(`/urls/${shortUrl}`),
+  getURL: (shortUrl) => api.get(`/urls/${shortUrl}`),
   // Add other API methods here
 };
 

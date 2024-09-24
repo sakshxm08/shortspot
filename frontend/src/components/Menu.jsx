@@ -1,7 +1,12 @@
 import { FaRegCopy } from "react-icons/fa";
 import { CiEdit } from "react-icons/ci";
 import { BsQrCode } from "react-icons/bs";
-import { IoCheckmark, IoOpenOutline, IoShareSocial } from "react-icons/io5";
+import {
+  IoAnalyticsOutline,
+  IoCheckmark,
+  IoOpenOutline,
+  IoShareSocial,
+} from "react-icons/io5";
 import { MdDeleteOutline } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
@@ -10,6 +15,7 @@ import EditURLModal from "./EditURLModal";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import QRCodeModal from "./QRCodeModal";
 import PropTypes from "prop-types";
+import { copyShortUrl, shareUrl } from "../utils/urlUtilities";
 
 const Menu = ({ url }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -39,8 +45,7 @@ const Menu = ({ url }) => {
   }, [copyStatus.timer]);
 
   const handleCopyShortUrl = () => {
-    const shortUrl = `${import.meta.env.VITE_SHORTEN_BASE_URL}/${url.shortUrl}`;
-    navigator.clipboard.writeText(shortUrl).then(() => {
+    copyShortUrl(url.shortUrl).then(() => {
       setCopyStatus({
         copied: true,
         timer: setTimeout(
@@ -56,26 +61,7 @@ const Menu = ({ url }) => {
   };
 
   const handleShare = async () => {
-    const shortUrl = `${import.meta.env.VITE_SHORTEN_BASE_URL}/${url.shortUrl}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Check out this shortened URL",
-          url: shortUrl,
-          text: "I created this shortened URL using ShortSpot.",
-        });
-        console.log("URL shared successfully");
-      } catch (error) {
-        console.error("Error sharing URL:", error);
-      }
-    } else {
-      // Fallback for browsers that don't support the Web Share API
-      handleCopyShortUrl();
-      alert(
-        "Sharing is not supported on this browser. The URL has been copied to your clipboard."
-      );
-    }
+    shareUrl(url.shortUrl);
     setIsMenuOpen(false);
   };
   return (
@@ -141,6 +127,15 @@ const Menu = ({ url }) => {
                   <BsQrCode />
                   Generate QR Code
                 </button>
+              </li>
+              <li>
+                <Link
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  to={`/analytics/${url.shortUrl}`}
+                >
+                  <IoAnalyticsOutline />
+                  View Analytics
+                </Link>
               </li>
               <li>
                 <button

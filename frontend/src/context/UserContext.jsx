@@ -8,10 +8,8 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [loading, setLoading] = useState(true);
-  const [globalLoading, setGlobalLoading] = useState(true);
 
   const checkAuthStatus = useCallback(async () => {
-    setGlobalLoading(true);
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
       try {
@@ -28,7 +26,6 @@ export const UserProvider = ({ children }) => {
       }
     }
     setLoading(false);
-    setGlobalLoading(false);
   }, []);
 
   useEffect(() => {
@@ -41,8 +38,6 @@ export const UserProvider = ({ children }) => {
     token,
     setToken,
     loading,
-    globalLoading,
-    setGlobalLoading,
     checkAuthStatus,
   };
 

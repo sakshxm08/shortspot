@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import api from "../api";
 import { Link } from "react-router-dom";
 import Menu from "../components/Menu";
+import { useURLs } from "../hooks/useURLs";
 
 const URLShortener = () => {
   const [inputURL, setInputURL] = useState("");
@@ -14,6 +15,7 @@ const URLShortener = () => {
   const [error, setError] = useState("");
   const [protocol, setProtocol] = useState("https");
 
+  const { setUrls } = useURLs();
   const isValidURL = (url) => {
     // Regular expression to match valid domain names
     const domainRegex = /^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$/;
@@ -77,7 +79,10 @@ const URLShortener = () => {
         useCustomUrl: useCustomURL,
       });
       setResponseURL(response.data);
-      setShortenedURL(response.data.shortUrl);
+      setUrls((prevUrls) => [response.data, ...prevUrls]);
+      setShortenedURL(
+        import.meta.env.VITE_SHORTEN_BASE_URL + "/" + response.data.shortUrl
+      );
     } catch (err) {
       setShortenedURL("");
       setError(err.response?.data?.error || "Failed to shorten URL");

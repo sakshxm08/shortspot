@@ -1,13 +1,32 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import api from "../api";
 
 export const URLContext = createContext();
 
 export const URLProvider = ({ children }) => {
   const [urls, setUrls] = useState([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchUrls = async () => {
+      try {
+        const response = await api.getUserURLs();
+        setUrls(response.data);
+      } catch (err) {
+        console.error(err);
+        setError(
+          err.response?.data?.error || "An error occurred. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUrls();
+  }, [setUrls]);
 
   return (
-    <URLContext.Provider value={{ urls, setUrls }}>
+    <URLContext.Provider value={{ urls, setUrls, error, loading }}>
       {children}
     </URLContext.Provider>
   );

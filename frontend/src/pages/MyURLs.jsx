@@ -1,30 +1,9 @@
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import api from "../api";
 import URLCard from "../components/URLCard";
 import { useURLs } from "../hooks/useURLs";
 
 const MyURLs = () => {
-  const { urls, setUrls } = useURLs();
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUrls = async () => {
-      try {
-        const response = await api.getUserURLs();
-        setUrls(response.data);
-      } catch (err) {
-        console.error(err);
-        setError(
-          err.response?.data?.error || "An error occurred. Please try again."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUrls();
-  }, [setUrls]);
+  const { urls, loading, error } = useURLs();
 
   if (loading) {
     return (
