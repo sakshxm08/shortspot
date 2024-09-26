@@ -50,7 +50,7 @@ const App = () => {
               element: <div></div>,
             },
             {
-              path: ":shortUrl",
+              path: ":_id",
               element: <URLAnalytics />,
             },
           ],

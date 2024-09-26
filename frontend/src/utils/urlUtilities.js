@@ -1,7 +1,7 @@
 export const getFaviconUrl = (originalUrl) => {
   try {
     const domain = new URL(originalUrl).hostname;
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
   } catch (error) {
     console.error("Error parsing URL:", error);
     return null;

@@ -21,7 +21,7 @@ const URLSidebar = () => {
 const URLSidebarCard = ({ url }) => {
   return (
     <NavLink
-      to={`/analytics/${url.shortUrl}`}
+      to={`/analytics/${url._id}`}
       className={({ isActive }) =>
         `p-4 w-full flex justify-between border-b border-gray-300  transition-all duration-300 ${
           isActive

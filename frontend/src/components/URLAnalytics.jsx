@@ -12,26 +12,39 @@ import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import QRCodeModal from "./QRCodeModal";
 import api from "../api";
 const URLAnalytics = () => {
-  const { shortUrl } = useParams();
-  const { urls, loading } = useURLs();
-  const [url, setUrl] = useState(null);
-  useEffect(() => {
-    const fetchURL = async () => {
-      if (!url) {
-        const response = await api.getURL(shortUrl);
-        setUrl(response.data);
-      } else {
-        setUrl(urls.find((url) => url.shortUrl === shortUrl));
-      }
-    };
-    fetchURL();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, shortUrl, urls]);
+  const { _id } = useParams();
+  const { urls, loading, setLoading, setError } = useURLs();
+
+  const [url, setUrl] = useState(
+    urls ? urls.find((url) => url?._id === _id) : null
+  );
 
   const [copyStatus, setCopyStatus] = useState({ copied: false, timer: null });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchURL = async () => {
+      setLoading(true);
+      try {
+        const response = await api.getURL(_id);
+        setUrl(response.data);
+      } catch (error) {
+        setError(
+          error.response?.data?.error || "An error occurred. Please try again."
+        );
+        console.error("Error fetching URL:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (!url) {
+      fetchURL();
+    } else {
+      setUrl(urls.find((url) => url?._id === _id));
+    }
+  }, [_id, setLoading, setError, urls, url]);
 
   useEffect(() => {
     return () => {
@@ -41,8 +54,12 @@ const URLAnalytics = () => {
     };
   }, [copyStatus.timer]);
 
+  if (loading || !url) {
+    return <div>Loading...</div>;
+  }
+
   const handleCopyShortUrl = () => {
-    copyShortUrl(url.shortUrl).then(() => {
+    copyShortUrl(url?.shortUrl).then(() => {
       setCopyStatus({
         copied: true,
         timer: setTimeout(
@@ -58,7 +75,7 @@ const URLAnalytics = () => {
   };
 
   const handleShare = async () => {
-    shareUrl(url.shortUrl);
+    shareUrl(url?.shortUrl);
   };
 
   const handleEdit = () => {
@@ -69,9 +86,7 @@ const URLAnalytics = () => {
     setIsDeleteModalOpen(true);
   };
 
-  return loading ? (
-    <div>Loading...</div>
-  ) : (
+  return (
     <div className="p-8">
       <div className="flex justify-between">
         <div className="flex items-center gap-2">
@@ -88,11 +103,11 @@ const URLAnalytics = () => {
           </div>
           <h4 className="font-bold text-xl">{`${
             import.meta.env.VITE_SHORTEN_BASE_URL
-          }/${url.shortUrl}`}</h4>
+          }/${url?.shortUrl}`}</h4>
         </div>
         <div className="flex items-center gap-2">
           <Link
-            to={`${import.meta.env.VITE_SHORTEN_BASE_URL}/${url.shortUrl}`}
+            to={`${import.meta.env.VITE_SHORTEN_BASE_URL}/${url?.shortUrl}`}
             target="_blank"
             className="p-2 rounded-md border border-primary-500 text-primary-500 hover:bg-primary-100 active:bg-primary-200 transition-all"
           >
@@ -141,12 +156,14 @@ const URLAnalytics = () => {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         url={url}
-        urlToDelete={`${import.meta.env.VITE_SHORTEN_BASE_URL}/${url.shortUrl}`}
+        urlToDelete={`${import.meta.env.VITE_SHORTEN_BASE_URL}/${
+          url?.shortUrl
+        }`}
       />
       <QRCodeModal
         isOpen={isQRModalOpen}
         onClose={() => setIsQRModalOpen(false)}
-        url={`${import.meta.env.VITE_SHORTEN_BASE_URL}/${url.shortUrl}`}
+        url={`${import.meta.env.VITE_SHORTEN_BASE_URL}/${url?.shortUrl}`}
       />
     </div>
   );

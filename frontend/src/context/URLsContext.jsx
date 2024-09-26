@@ -26,7 +26,9 @@ export const URLProvider = ({ children }) => {
   }, [setUrls]);
 
   return (
-    <URLContext.Provider value={{ urls, setUrls, error, loading }}>
+    <URLContext.Provider
+      value={{ urls, setUrls, error, loading, setLoading, setError }}
+    >
       {children}
     </URLContext.Provider>
   );

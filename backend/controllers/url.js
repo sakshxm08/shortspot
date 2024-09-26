@@ -130,10 +130,7 @@ const updateUrl = async (req, res) => {
 
 const getURL = async (req, res) => {
   try {
-    const url = await Url.findOne({
-      shortUrl: req.params.shortUrl,
-      user: req.userId,
-    });
+    const url = await Url.findById(req.params.id);
     if (!url) {
       return res.status(404).json({ error: "URL not found or not authorized" });
     }

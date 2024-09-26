@@ -11,7 +11,7 @@ router.post("/shorten", verifyToken, shortenUrl);
 
 router.get("/", verifyToken, getUrls);
 
-router.get("/:shortUrl", verifyToken, getURL);
+router.get("/:id", verifyToken, getURL);
 
 router.delete("/:id", verifyToken, deleteUrl);
 
