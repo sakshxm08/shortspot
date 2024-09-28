@@ -49,7 +49,8 @@ const redirectToOriginalUrl = async (req, res) => {
   try {
     const url = await Url.findOne({ shortUrl: req.params.shortUrl });
     if (url) {
-      const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+      // const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+      const ip = "49.36.144.48";
       const geo = geoip.lookup(ip);
       const userAgent = req.headers["user-agent"];
       const referrer = req.headers["referer"] || "Direct";
