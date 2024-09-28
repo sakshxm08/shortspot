@@ -2,11 +2,20 @@ import PropTypes from "prop-types";
 import { useURLs } from "../hooks/useURLs";
 import { useState } from "react";
 import api from "../api";
+import { useNavigate } from "react-router-dom";
 
-const DeleteConfirmationModal = ({ isOpen, onClose, url, urlToDelete }) => {
+const DeleteConfirmationModal = ({
+  isOpen,
+  onClose,
+  url,
+  urlToDelete,
+  isAnalyticsPage = false,
+}) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { urls, setUrls } = useURLs();
+
+  const navigate = useNavigate();
 
   const handleClose = () => {
     onClose();
@@ -18,6 +27,9 @@ const DeleteConfirmationModal = ({ isOpen, onClose, url, urlToDelete }) => {
     try {
       await api.deleteURL(url._id);
       setUrls(urls.filter((el) => url._id !== el._id));
+      if (isAnalyticsPage) {
+        navigate("/analytics");
+      }
       handleClose();
     } catch (err) {
       console.error(err);
@@ -76,6 +88,7 @@ DeleteConfirmationModal.propTypes = {
     _id: PropTypes.string.isRequired,
   }).isRequired,
   urlToDelete: PropTypes.string.isRequired,
+  isAnalyticsPage: PropTypes.bool,
 };
 
 export default DeleteConfirmationModal;

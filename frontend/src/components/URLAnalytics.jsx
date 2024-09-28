@@ -1,93 +1,138 @@
 import { Link, useParams } from "react-router-dom";
-import { copyShortUrl, getFaviconUrl, shareUrl } from "../utils/urlUtilities";
+import { getFaviconUrl } from "../utils/urlUtilities";
 import { useURLs } from "../hooks/useURLs";
-import { MdOutlineShare, MdOutlineDelete } from "react-icons/md";
-import { IoCheckmark, IoOpenOutline } from "react-icons/io5";
-import { FaRegCopy } from "react-icons/fa";
-import { BsQrCode } from "react-icons/bs";
-import { CiEdit } from "react-icons/ci";
 import { useEffect, useState } from "react";
-import EditURLModal from "./EditURLModal";
-import DeleteConfirmationModal from "./DeleteConfirmationModal";
-import QRCodeModal from "./QRCodeModal";
+import URLOptions from "./URLOptions";
+import { LuRefreshCw } from "react-icons/lu";
 import api from "../api";
+import { Bar } from "react-chartjs-2";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import moment from "moment";
+import "leaflet/dist/leaflet.css";
+import "chart.js/auto"; // Required for using Chart.js in React
+
 const URLAnalytics = () => {
   const { _id } = useParams();
-  const { urls, loading, setLoading, setError } = useURLs();
+  const {
+    urls,
+    loading: urlsLoading,
+    setLoading: setUrlsLoading,
+    setUrls,
+  } = useURLs();
 
   const [url, setUrl] = useState(
     urls ? urls.find((url) => url?._id === _id) : null
   );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
-  const [copyStatus, setCopyStatus] = useState({ copied: false, timer: null });
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [analytics, setAnalytics] = useState([]);
+  const [filteredAnalytics, setFilteredAnalytics] = useState([]);
+  const [filter, setFilter] = useState("24 hours");
 
   useEffect(() => {
-    const fetchURL = async () => {
-      setLoading(true);
-      try {
-        const response = await api.getURL(_id);
-        setUrl(response.data);
-      } catch (error) {
-        setError(
-          error.response?.data?.error || "An error occurred. Please try again."
+    const currentUrl = urls.find((url) => url?._id === _id);
+    setUrl(currentUrl);
+    setAnalytics(currentUrl?.analytics);
+    if (url) setUrlsLoading(false);
+  }, [_id, urlsLoading, setUrlsLoading, urls, url]);
+
+  useEffect(() => {
+    const filterData = () => {
+      const now = moment();
+      let filteredData = [];
+
+      if (!analytics) {
+        return;
+      }
+      if (filter === "24 hours") {
+        filteredData = analytics.filter((item) =>
+          moment(item.timestamp).isAfter(now.subtract(1, "days"))
         );
-        console.error("Error fetching URL:", error);
-      } finally {
-        setLoading(false);
+      } else if (filter === "week") {
+        filteredData = analytics.filter((item) =>
+          moment(item.timestamp).isAfter(now.subtract(7, "days"))
+        );
+      } else if (filter === "month") {
+        filteredData = analytics.filter((item) =>
+          moment(item.timestamp).isAfter(now.subtract(1, "months"))
+        );
       }
+
+      if (analytics && filter) setFilteredAnalytics(filteredData);
     };
-    if (!url) {
-      fetchURL();
-    } else {
-      setUrl(urls.find((url) => url?._id === _id));
+
+    filterData();
+  }, [filter, analytics]);
+
+  const fetchURL = async () => {
+    setLoading(true);
+    try {
+      const response = await api.getURL(_id);
+      setUrl(response.data);
+      setAnalytics(response.data?.analytics);
+      setUrls(
+        urls.map((el) => {
+          if (url._id !== el._id) return el;
+          return response.data;
+        })
+      );
+    } catch (error) {
+      setError(
+        error.response?.data?.error || "An error occurred. Please try again."
+      );
+      console.error("Error fetching URL:", error);
+    } finally {
+      setLoading(false);
     }
-  }, [_id, setLoading, setError, urls, url]);
+  };
 
-  useEffect(() => {
-    return () => {
-      if (copyStatus.timer) {
-        clearTimeout(copyStatus.timer);
-      }
-    };
-  }, [copyStatus.timer]);
-
-  if (loading || !url) {
-    return <div>Loading...</div>;
+  if (urlsLoading || !url || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        Loading...
+      </div>
+    );
   }
 
-  const handleCopyShortUrl = () => {
-    copyShortUrl(url?.shortUrl).then(() => {
-      setCopyStatus({
-        copied: true,
-        timer: setTimeout(
-          () => setCopyStatus({ copied: false, timer: null }),
-          1500
-        ),
-      });
-    });
-  };
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
-  const generateQRCode = () => {
-    setIsQRModalOpen(true);
-  };
+  // Total human clicks (excluding spiders/bots)
+  const humanClicks = filteredAnalytics.filter(
+    (item) => item.deviceType !== "Spider 0.0.0"
+  ).length;
 
-  const handleShare = async () => {
-    shareUrl(url?.shortUrl);
-  };
+  // Unique clicks (by IP and timestamp)
+  const uniqueClicks = new Set(
+    filteredAnalytics.map((item) => item.ip + item.timestamp)
+  ).size;
 
-  const handleEdit = () => {
-    setIsEditModalOpen(true);
-  };
+  // Unique visitors (by IP)
+  const uniqueVisitors = new Set(filteredAnalytics.map((item) => item.ip)).size;
 
-  const handleDelete = () => {
-    setIsDeleteModalOpen(true);
+  // Grouped by date for bar chart
+  const groupedByDate = filteredAnalytics.reduce((acc, item) => {
+    const date = moment(item.timestamp).format("YYYY-MM-DD");
+    acc[date] = (acc[date] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Bar chart data
+  const barData = {
+    labels: Object.keys(groupedByDate),
+    datasets: [
+      {
+        label: "Number of Clicks",
+        data: Object.values(groupedByDate),
+        backgroundColor: "rgba(75, 192, 192, 0.6)",
+      },
+    ],
   };
 
   return (
-    <div className="p-8">
+    <div className="p-8 flex flex-col gap-4">
       <div className="flex justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8">
@@ -105,66 +150,109 @@ const URLAnalytics = () => {
             import.meta.env.VITE_SHORTEN_BASE_URL
           }/${url?.shortUrl}`}</h4>
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            to={`${import.meta.env.VITE_SHORTEN_BASE_URL}/${url?.shortUrl}`}
-            target="_blank"
-            className="p-2 rounded-md border border-primary-500 text-primary-500 hover:bg-primary-100 active:bg-primary-200 transition-all"
+        <URLOptions url={url} />
+      </div>
+      <div className="text-gray-500 text-xs flex items-center">
+        <span className="pr-2 border-r">
+          {url.analytics.length} All Time Clicks
+        </span>
+        <span className="pl-2">
+          Created {moment().diff(moment(url.createdAt), "days")} days ago on{" "}
+          {moment(url.createdAt).format("MMM Do YYYY")}
+        </span>
+      </div>
+      <Link
+        to={url.originalUrl}
+        className="text-primary-500 hover:underline w-fit"
+      >
+        {url.originalUrl}
+      </Link>
+      <div className="flex items-end gap-4">
+        <button
+          onClick={fetchURL}
+          className="border p-2 flex items-center gap-2 justify-center text-sm font-bold hover:border-primary-500 hover:bg-primary-500/10 transition-all"
+        >
+          <LuRefreshCw /> Refresh
+        </button>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-2">
+            Filter by Time Range
+          </label>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="border p-2 flex items-center gap-2 justify-center text-sm font-bold hover:border-primary-500 hover:bg-primary-500/10 transition-all focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           >
-            <IoOpenOutline size={20} />
-          </Link>
-          <button
-            onClick={handleCopyShortUrl}
-            className="p-2 rounded-md border border-primary-500 text-primary-500 hover:bg-primary-100 active:bg-primary-200 transition-all"
-          >
-            {copyStatus.copied ? (
-              <IoCheckmark size={20} className="text-green-500" />
-            ) : (
-              <FaRegCopy size={20} />
-            )}
-          </button>
-          <button
-            onClick={handleEdit}
-            className="p-2 rounded-md border border-primary-500 text-primary-500 hover:bg-primary-100 active:bg-primary-200 transition-all"
-          >
-            <CiEdit size={20} />
-          </button>
-          <button
-            onClick={generateQRCode}
-            className="p-2 rounded-md border border-primary-500 text-primary-500 hover:bg-primary-100 active:bg-primary-200 transition-all"
-          >
-            <BsQrCode size={20} />
-          </button>
-          <button
-            onClick={handleShare}
-            className="p-2 rounded-md border border-primary-500 text-primary-500 hover:bg-primary-100 active:bg-primary-200 transition-all"
-          >
-            <MdOutlineShare size={20} />
-          </button>
-          <button
-            onClick={handleDelete}
-            className="p-2 rounded-md border border-red-500 text-red-500 hover:bg-red-100 active:bg-red-200 transition-all"
-          >
-            <MdOutlineDelete size={20} />
-          </button>
+            <option value="24 hours">Last 24 Hours</option>
+            <option value="week">Last Week</option>
+            <option value="month">Last Month</option>
+          </select>
         </div>
       </div>
-      {isEditModalOpen && (
-        <EditURLModal url={url} onClose={() => setIsEditModalOpen(false)} />
-      )}
-      <DeleteConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        url={url}
-        urlToDelete={`${import.meta.env.VITE_SHORTEN_BASE_URL}/${
-          url?.shortUrl
-        }`}
-      />
-      <QRCodeModal
-        isOpen={isQRModalOpen}
-        onClose={() => setIsQRModalOpen(false)}
-        url={`${import.meta.env.VITE_SHORTEN_BASE_URL}/${url?.shortUrl}`}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="p-4 bg-white rounded-lg shadow">
+          <p className="text-lg font-semibold">Total Human Clicks</p>
+          <p className="text-2xl">{humanClicks}</p>
+        </div>
+        <div className="p-4 bg-white rounded-lg shadow">
+          <p className="text-lg font-semibold">Unique Clicks</p>
+          <p className="text-2xl">{uniqueClicks}</p>
+        </div>
+        <div className="p-4 bg-white rounded-lg shadow">
+          <p className="text-lg font-semibold">Unique Visitors</p>
+          <p className="text-2xl">{uniqueVisitors}</p>
+        </div>
+      </div>
+      {/* Bar Chart (Clicks by Date) */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4">Clicks Over Time</h2>
+        <Bar data={barData} />
+      </div>
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4">World Traffic Map</h2>
+        <div className="h-96 w-full">
+          <MapContainer
+            center={[20, 0]}
+            zoom={2}
+            scrollWheelZoom={true}
+            className="h-full w-full"
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            {analytics &&
+              analytics
+                .filter(
+                  (data) => data.location?.latitude && data.location?.longitude
+                )
+                .map((data, index) => (
+                  <Marker
+                    key={index}
+                    position={[data.location.latitude, data.location.longitude]}
+                  >
+                    <Popup>
+                      <div>
+                        <p>
+                          <strong>IP:</strong> {data.ip}
+                        </p>
+                        <p>
+                          <strong>Location:</strong> {data.location.city},{" "}
+                          {data.location.country}
+                        </p>
+                        <p>
+                          <strong>Browser:</strong> {data.browser}
+                        </p>
+                        <p>
+                          <strong>OS:</strong> {data.os}
+                        </p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+          </MapContainer>
+        </div>
+      </div>
     </div>
   );
 };

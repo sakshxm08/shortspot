@@ -54,7 +54,7 @@ const redirectToOriginalUrl = async (req, res) => {
       const userAgent = req.headers["user-agent"];
       const referrer = req.headers["referer"] || "Direct";
       const agent = useragent.parse(userAgent);
-
+      // Add analytics data to URL model
       url.analytics.push({
         ip,
         userAgent,
@@ -62,6 +62,8 @@ const redirectToOriginalUrl = async (req, res) => {
         location: {
           country: geo?.country,
           city: geo?.city,
+          latitude: geo?.ll ? geo.ll[0] : null, // Extract latitude
+          longitude: geo?.ll ? geo.ll[1] : null, // Extract longitude
         },
         deviceType: agent.device.toString(),
         os: agent.os.toString(),

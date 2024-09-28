@@ -8,26 +8,26 @@ export const URLProvider = ({ children }) => {
   const [urls, setUrls] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const fetchUrls = async () => {
+    try {
+      const response = await api.getUserURLs();
+      setUrls(response.data);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err.response?.data?.error || "An error occurred. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchUrls = async () => {
-      try {
-        const response = await api.getUserURLs();
-        setUrls(response.data);
-      } catch (err) {
-        console.error(err);
-        setError(
-          err.response?.data?.error || "An error occurred. Please try again."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchUrls();
   }, [setUrls]);
 
   return (
     <URLContext.Provider
-      value={{ urls, setUrls, error, loading, setLoading, setError }}
+      value={{ urls, setUrls, error, loading, setLoading, setError, fetchUrls }}
     >
       {children}
     </URLContext.Provider>
