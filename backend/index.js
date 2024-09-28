@@ -8,8 +8,11 @@ import redirectRoutes from "./routes/redirect.js";
 
 const app = express();
 
+// const corsOptions = {
+//   origin: ["http://localhost:5174", "http://localhost:5173"],
+// };
 const corsOptions = {
-  origin: ["http://localhost:5174", "http://localhost:5173"],
+  origin: "*", // Allow all origins for now
 };
 
 // Middleware
