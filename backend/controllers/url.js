@@ -1,7 +1,7 @@
 import Url from "../models/Url.js";
 import shortid from "shortid";
-import geoip from "geoip-lite";
 import useragent from "useragent";
+import { getGeolocation } from "../utils/getGeoLocation.js";
 
 const shortenUrl = async (req, res) => {
   const { originalUrl, customUrl, useCustomUrl } = req.body;
@@ -49,9 +49,9 @@ const redirectToOriginalUrl = async (req, res) => {
   try {
     const url = await Url.findOne({ shortUrl: req.params.shortUrl });
     if (url) {
-      // const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-      const ip = "49.36.144.48";
-      const geo = geoip.lookup(ip);
+      const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+      // const ip = "49.36.144.48";
+      const geo = await getGeolocation(ip);
       const userAgent = req.headers["user-agent"];
       const referrer = req.headers["referer"] || "Direct";
       const agent = useragent.parse(userAgent);
@@ -63,8 +63,8 @@ const redirectToOriginalUrl = async (req, res) => {
         location: {
           country: geo?.country,
           city: geo?.city,
-          latitude: geo?.ll ? geo.ll[0] : null, // Extract latitude
-          longitude: geo?.ll ? geo.ll[1] : null, // Extract longitude
+          latitude: geo?.lat, // Extract latitude
+          longitude: geo?.lon, // Extract longitude
         },
         deviceType: agent.device.toString(),
         os: agent.os.toString(),
