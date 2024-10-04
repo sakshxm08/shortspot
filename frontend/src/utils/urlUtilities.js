@@ -23,7 +23,6 @@ export const shareUrl = async (url) => {
         url: shortUrl,
         text: "I created this shortened URL using ShortSpot.",
       });
-      console.log("URL shared successfully");
     } catch (error) {
       console.error("Error sharing URL:", error);
     }

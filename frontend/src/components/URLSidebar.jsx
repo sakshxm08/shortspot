@@ -7,7 +7,7 @@ import { getFaviconUrl } from "../utils/urlUtilities";
 const URLSidebar = () => {
   const { urls } = useURLs();
   return (
-    <div className="h-screen w-full bg-gray-100 flex flex-col">
+    <div className="h-[calc(100vh-56px)] w-full bg-gray-100 flex flex-col sticky top-14 left-0 right-0 z-50">
       <h2 className="text-center font-bold py-2 bg-primary-600 text-white">
         Your Recent ShortSpots
       </h2>
@@ -41,9 +41,10 @@ const URLSidebarCard = ({ url }) => {
           }}
         />
         <div className="flex flex-col gap-1 w-full">
-          <h4 className="font-bold">{`${
-            import.meta.env.VITE_SHORTEN_BASE_URL
-          }/${url.shortUrl}`}</h4>
+          <h4
+            className="font-bold truncate w-72"
+            title={import.meta.env.VITE_SHORTEN_BASE_URL + "/" + url.shortUrl}
+          >{`${import.meta.env.VITE_SHORTEN_BASE_URL}/${url.shortUrl}`}</h4>
           <h6 className="text-sm text-primary-400">{url.originalUrl}</h6>
           <div className="flex items-center justify-between text-gray-400 text-xs w-full">
             <span>{moment(url.createdAt).fromNow()}</span>

@@ -8,7 +8,7 @@ const Layout = () => {
   const { logout } = useLogout();
   return (
     <div>
-      <nav className="bg-primary-500 p-4">
+      <nav className="bg-primary-500 p-4 sticky top-0 left-0 right-0 z-50">
         <ul className="flex space-x-4">
           <li>
             <Link to="/" className="text-white hover:underline">

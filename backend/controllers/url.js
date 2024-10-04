@@ -2,22 +2,46 @@ import Url from "../models/Url.js";
 import shortid from "shortid";
 import useragent from "useragent";
 import { getGeolocation } from "../utils/getGeoLocation.js";
+import User from "../models/User.js";
 
 const shortenUrl = async (req, res) => {
-  const { originalUrl, customUrl, useCustomUrl } = req.body;
+  const { originalUrl, customUrl, useCustomUrl, platform } = req.body;
   let shortUrl;
+  if (platform) {
+    const user = await User.findById(req.userId).select("-password");
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const existingSocial = user.socials.find(
+      (social) => social.platform === platform
+    );
+    if (existingSocial) {
+      return res
+        .status(400)
+        .json({ error: "Social media link already exists" }); // Return error if social media link exists
+    }
 
-  if (useCustomUrl && customUrl) {
+    user.socials.push({ platform, url: originalUrl });
+    shortUrl = `${user.username}/${platform}`;
+    const [, existingUrl] = await Promise.all([
+      user.save(),
+      Url.findOne({ shortUrl, originalUrl }),
+    ]);
+
+    if (existingUrl) {
+      return res.status(200).json({ shortUrl }); // Added return here
+    }
+  } else if (useCustomUrl && customUrl) {
     if (customUrl.includes("/")) {
       return res
         .status(400)
         .json({ error: "Custom URL cannot contain slashes" });
     }
-    const existingUrl = await Url.findOne({ shortUrl: customUrl });
+    shortUrl = customUrl;
+    const existingUrl = await Url.findOne({ shortUrl });
     if (existingUrl) {
       return res.status(400).json({ error: "Custom URL is already in use" });
     }
-    shortUrl = customUrl;
   } else {
     shortUrl = shortid.generate();
   }
@@ -28,7 +52,6 @@ const shortenUrl = async (req, res) => {
       shortUrl,
       user: req.userId,
     });
-
     await url.save();
     res.json(url);
   } catch (err) {
@@ -47,7 +70,14 @@ const getUrls = async (req, res) => {
 
 const redirectToOriginalUrl = async (req, res) => {
   try {
-    const url = await Url.findOne({ shortUrl: req.params.shortUrl });
+    let url;
+    if (req.isPlatform) {
+      url = await Url.findOne({
+        shortUrl: `${req.params.username}/${req.params.platform}`,
+      });
+    } else {
+      url = await Url.findOne({ shortUrl: req.params.shortUrl });
+    }
     if (url) {
       const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
       // const ip = "49.36.144.48";
